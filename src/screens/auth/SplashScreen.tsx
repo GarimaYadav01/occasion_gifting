@@ -51,7 +51,7 @@ export const SplashScreen: React.FC<Props> = ({ navigation }) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: colors.skyBlue,
+    backgroundColor: colors.purpleLight,
     alignItems: 'center',
     justifyContent: 'center',
   },

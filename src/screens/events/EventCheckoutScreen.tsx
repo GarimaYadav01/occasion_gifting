@@ -68,7 +68,7 @@ export const EventCheckoutScreen: React.FC<Props> = ({ navigation, route }) => {
       dispatch(addOrder(order));
       dispatch(setEventDraft(null));
       setLoading(false);
-      navigation.getParent()?.navigate('OrdersTab', {
+      navigation.getParent()?.navigate('ProfileTab', {
         screen: 'OrderTracking',
         params: { orderId },
       });

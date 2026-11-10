@@ -4,38 +4,44 @@ import {
   Text,
   StyleSheet,
   TouchableOpacity,
-  TextInput,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Icon } from '../ui/Icon';
 import { colors, radius, spacing, typography } from '../../theme';
 
 interface HomeHeaderProps {
-  search: string;
-  onSearchChange: (text: string) => void;
+  locationLabel: string;
+  onLocationPress: () => void;
   cartCount: number;
   onCartPress: () => void;
   onNotificationPress: () => void;
+  onSearchPress: () => void;
   unreadCount?: number;
 }
 
 export const HomeHeader: React.FC<HomeHeaderProps> = ({
-  search,
-  onSearchChange,
+  locationLabel,
+  onLocationPress,
   cartCount,
   onCartPress,
   onNotificationPress,
+  onSearchPress,
   unreadCount = 0,
 }) => (
   <SafeAreaView edges={['top']} style={styles.safeArea}>
     <View style={styles.container}>
       <View style={styles.locationRow}>
-        <TouchableOpacity style={styles.locationBtn} activeOpacity={0.8}>
-          <Icon name="map-marker" size={22} color={colors.skyBlue} />
-          <View>
+        <TouchableOpacity
+          style={styles.locationBtn}
+          activeOpacity={0.8}
+          onPress={onLocationPress}>
+          <Icon name="map-marker" size={22} color={colors.purple} />
+          <View style={styles.locationTextWrap}>
             <Text style={styles.deliverLabel}>Deliver to</Text>
             <View style={styles.locationLine}>
-              <Text style={styles.locationText}>Mumbai, 400001</Text>
+              <Text style={styles.locationText} numberOfLines={1}>
+                {locationLabel}
+              </Text>
               <Icon name="chevron-down" size={16} color={colors.textMuted} />
             </View>
           </View>
@@ -60,16 +66,15 @@ export const HomeHeader: React.FC<HomeHeaderProps> = ({
         </View>
       </View>
 
-      <View style={styles.searchRow}>
+      <TouchableOpacity
+        style={styles.searchRow}
+        activeOpacity={0.85}
+        onPress={onSearchPress}>
         <Icon name="magnify" size={20} color={colors.textMuted} />
-        <TextInput
-          style={styles.searchInput}
-          placeholder="Search flowers, cakes, gifts..."
-          placeholderTextColor={colors.textMuted}
-          value={search}
-          onChangeText={onSearchChange}
-        />
-      </View>
+        <Text style={styles.searchPlaceholder}>
+          Search flowers, cakes, gifts...
+        </Text>
+      </TouchableOpacity>
 
       <View style={styles.expressStrip}>
         <Icon name="flash" size={16} color={colors.green} />
@@ -102,6 +107,10 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     flex: 1,
     gap: spacing.sm,
+    marginRight: spacing.sm,
+  },
+  locationTextWrap: {
+    flex: 1,
   },
   deliverLabel: {
     fontSize: 11,
@@ -117,6 +126,7 @@ const styles = StyleSheet.create({
     ...typography.body,
     fontWeight: '700',
     fontSize: 15,
+    flexShrink: 1,
   },
   actions: {
     flexDirection: 'row',
@@ -161,11 +171,10 @@ const styles = StyleSheet.create({
     borderColor: colors.border,
     gap: spacing.sm,
   },
-  searchInput: {
+  searchPlaceholder: {
     flex: 1,
     fontSize: 15,
-    color: colors.text,
-    paddingVertical: 0,
+    color: colors.textMuted,
   },
   expressStrip: {
     flexDirection: 'row',

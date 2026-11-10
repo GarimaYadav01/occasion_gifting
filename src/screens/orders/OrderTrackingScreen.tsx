@@ -1,7 +1,7 @@
 import React from 'react';
 import { View, Text, StyleSheet, Image } from 'react-native';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
-import { OrdersStackParamList, HomeStackParamList } from '../../navigation/types';
+import { OrdersStackParamList, HomeStackParamList, ProfileStackParamList } from '../../navigation/types';
 import { formatPrice } from '../../data/mockData';
 import { useAppSelector } from '../../store/hooks';
 import { ScreenContainer } from '../../components/ui/ScreenContainer';
@@ -12,7 +12,7 @@ import { OrderStatusTimeline } from '../../components/cart/OrderStatusTimeline';
 import { colors, spacing, typography } from '../../theme';
 
 type Props = NativeStackScreenProps<
-  OrdersStackParamList & HomeStackParamList,
+  OrdersStackParamList & HomeStackParamList & ProfileStackParamList,
   'OrderTracking'
 >;
 

@@ -4,6 +4,7 @@ import cartReducer from './slices/cartSlice';
 import ordersReducer from './slices/ordersSlice';
 import wishlistReducer from './slices/wishlistSlice';
 import appReducer from './slices/appSlice';
+import locationReducer from './slices/locationSlice';
 
 export const store = configureStore({
   reducer: {
@@ -12,6 +13,7 @@ export const store = configureStore({
     orders: ordersReducer,
     wishlist: wishlistReducer,
     app: appReducer,
+    location: locationReducer,
   },
   middleware: getDefaultMiddleware =>
     getDefaultMiddleware({ serializableCheck: false }),

@@ -2,6 +2,7 @@ import React from 'react';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { HomeStackParamList } from './types';
 import { HomeScreen } from '../screens/home/HomeScreen';
+import { SearchScreen } from '../screens/home/SearchScreen';
 import { CategoriesScreen } from '../screens/home/CategoriesScreen';
 import { ProductListingScreen } from '../screens/home/ProductListingScreen';
 import { ProductDetailsScreen } from '../screens/home/ProductDetailsScreen';
@@ -21,6 +22,7 @@ export const HomeStackNavigator = () => (
       animation: 'slide_from_right',
     }}>
     <Stack.Screen name="Home" component={HomeScreen} />
+    <Stack.Screen name="Search" component={SearchScreen} />
     <Stack.Screen name="Categories" component={CategoriesScreen} />
     <Stack.Screen name="ProductListing" component={ProductListingScreen} />
     <Stack.Screen name="ProductDetails" component={ProductDetailsScreen} />

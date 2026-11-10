@@ -1,5 +1,6 @@
 import React from 'react';
-import { Image, StyleSheet, ImageStyle } from 'react-native';
+import { Image, StyleSheet, ImageStyle, View, Text } from 'react-native';
+import { colors, typography } from '../../theme';
 
 interface BrandLogoProps {
   variant?: 'full' | 'icon';
@@ -8,37 +9,35 @@ interface BrandLogoProps {
 }
 
 const sizes = {
-  full: {
-    sm: { width: 200, height: 80 },
-    md: { width: 260, height: 104 },
-    lg: { width: 320, height: 128 },
-  },
   icon: { sm: 80, md: 110, lg: 140 },
 };
 
+/**
+ * Uses app-icon only. Drop brand-logo.png — replace app-icon.png with your new logo.
+ */
 export const BrandLogo: React.FC<BrandLogoProps> = ({
-  variant = 'full',
+  variant = 'icon',
   size = 'md',
   style,
 }) => {
-  const dimension = sizes[variant][size];
-  const source =
-    variant === 'icon'
-      ? require('../../assets/images/app-icon.png')
-      : require('../../assets/images/brand-logo.png');
+  if (variant === 'full') {
+    return (
+      <View style={[styles.wordmark, style as object]}>
+        <Image
+          source={require('../../assets/images/app-icon.png')}
+          style={{ width: 48, height: 48 }}
+          resizeMode="contain"
+        />
+        <Text style={styles.wordmarkText}>ONG</Text>
+      </View>
+    );
+  }
 
-  const imageStyle =
-    variant === 'full'
-      ? {
-          width: (dimension as { width: number; height: number }).width,
-          height: (dimension as { width: number; height: number }).height,
-        }
-      : { width: dimension as number, height: dimension as number };
-
+  const dimension = sizes.icon[size];
   return (
     <Image
-      source={source}
-      style={[styles.logo, imageStyle, style]}
+      source={require('../../assets/images/app-icon.png')}
+      style={[styles.logo, { width: dimension, height: dimension }, style]}
       resizeMode="contain"
     />
   );
@@ -48,5 +47,14 @@ const styles = StyleSheet.create({
   logo: {
     alignSelf: 'center',
     backgroundColor: 'transparent',
+  },
+  wordmark: {
+    alignSelf: 'center',
+    alignItems: 'center',
+    gap: 8,
+  },
+  wordmarkText: {
+    ...typography.h2,
+    color: colors.purple,
   },
 });

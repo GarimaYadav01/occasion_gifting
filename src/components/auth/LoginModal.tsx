@@ -22,7 +22,6 @@ import { runPendingAuthAction, clearPendingAuthAction } from '../../services/aut
 import { useRequireAuth } from '../../hooks/useRequireAuth';
 import { Input } from '../ui/Input';
 import { Button } from '../ui/Button';
-import { BrandLogo } from '../layout/BrandLogo';
 import { Icon } from '../ui/Icon';
 import { colors, radius, spacing, typography } from '../../theme';
 
@@ -89,7 +88,10 @@ export const LoginModal: React.FC = () => {
               <Icon name="close" size={22} color={colors.textMuted} />
             </TouchableOpacity>
 
-            <BrandLogo variant="full" size="lg" style={styles.logo} />
+            <View style={styles.brandMark}>
+              <Icon name="gift" size={28} color={colors.purple} />
+            </View>
+            <Text style={styles.brandName}>ONG</Text>
             <Text style={styles.title}>{loginModalMessage}</Text>
             <Text style={styles.subtitle}>
               {otpSent
@@ -196,12 +198,25 @@ const styles = StyleSheet.create({
     fontSize: 18,
     color: colors.textMuted,
   },
-  logo: {
-    marginBottom: spacing.lg,
+  brandMark: {
+    width: 56,
+    height: 56,
+    borderRadius: 28,
+    backgroundColor: colors.purpleLight,
+    alignItems: 'center',
+    justifyContent: 'center',
+    alignSelf: 'center',
     marginTop: spacing.sm,
+    marginBottom: spacing.sm,
+  },
+  brandName: {
+    ...typography.h2,
+    textAlign: 'center',
+    color: colors.purple,
+    marginBottom: spacing.md,
   },
   title: {
-    ...typography.h2,
+    ...typography.h3,
     textAlign: 'center',
     color: colors.navy,
   },

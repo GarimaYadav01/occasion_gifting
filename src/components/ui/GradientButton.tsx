@@ -48,7 +48,7 @@ export const GradientButton: React.FC<GradientButtonProps> = ({
       disabled={isDisabled}
       style={[fullWidth && styles.fullWidth, isDisabled && styles.disabled, style]}>
       <LinearGradient
-        colors={[colors.skyBlue, colors.skyBlueDark]}
+        colors={[colors.gradientStart, colors.gradientEnd]}
         start={{ x: 0, y: 0 }}
         end={{ x: 1, y: 0 }}
         style={[styles.gradient, styles[`size_${size}`]]}>

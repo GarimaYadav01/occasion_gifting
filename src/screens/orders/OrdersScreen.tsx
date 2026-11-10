@@ -1,7 +1,7 @@
 import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, Image } from 'react-native';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
-import { OrdersStackParamList } from '../../navigation/types';
+import { OrdersStackParamList, ProfileStackParamList } from '../../navigation/types';
 import { formatPrice } from '../../data/mockData';
 import { useAppSelector } from '../../store/hooks';
 import { useRequireAuth } from '../../hooks/useRequireAuth';
@@ -16,7 +16,10 @@ import { OrderStatus } from '../../types';
 import { useAppDispatch } from '../../store/hooks';
 import { openLoginModal } from '../../store/slices/authSlice';
 
-type Props = NativeStackScreenProps<OrdersStackParamList, 'Orders'>;
+type Props = NativeStackScreenProps<
+  OrdersStackParamList & ProfileStackParamList,
+  'Orders'
+>;
 
 const statusVariant: Record<
   OrderStatus,
@@ -47,7 +50,12 @@ export const OrdersScreen: React.FC<Props> = ({ navigation }) => {
   if (!isAuthenticated) {
     return (
       <ScreenContainer scroll={false}>
-        <Header title="My Orders" subtitle="Track your purchases" />
+        <Header
+          title="My Orders"
+          subtitle="Track your purchases"
+          showBack
+          onBack={() => navigation.goBack()}
+        />
         <EmptyState
           icon="package-variant"
           title="Login to View Orders"
@@ -62,7 +70,12 @@ export const OrdersScreen: React.FC<Props> = ({ navigation }) => {
   if (orders.length === 0) {
     return (
       <ScreenContainer scroll={false}>
-        <Header title="My Orders" subtitle="Track your purchases" />
+        <Header
+          title="My Orders"
+          subtitle="Track your purchases"
+          showBack
+          onBack={() => navigation.goBack()}
+        />
         <EmptyState
           icon="package-variant"
           title="No Orders Yet"
@@ -74,7 +87,12 @@ export const OrdersScreen: React.FC<Props> = ({ navigation }) => {
 
   return (
     <ScreenContainer contentStyle={styles.content}>
-      <Header title="My Orders" subtitle={`${orders.length} orders`} />
+      <Header
+        title="My Orders"
+        subtitle={`${orders.length} orders`}
+        showBack
+        onBack={() => navigation.goBack()}
+      />
 
       {orders.map(order => (
         <TouchableOpacity

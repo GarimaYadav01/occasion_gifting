@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 import {
   View,
   Text,
@@ -17,6 +17,7 @@ import {
 } from '../../data/mockData';
 import { useAppSelector, useAppDispatch } from '../../store/hooks';
 import { toggleWishlist } from '../../store/slices/wishlistSlice';
+import { openLocationSheet } from '../../store/slices/locationSlice';
 import { useRequireAuth } from '../../hooks/useRequireAuth';
 import { HomeHeader } from '../../components/home/HomeHeader';
 import { BannerCarousel } from '../../components/home/BannerCarousel';
@@ -24,7 +25,7 @@ import { OccasionChips } from '../../components/home/OccasionChips';
 import { CategoryGrid } from '../../components/home/CategoryGrid';
 import { ProductRowCard } from '../../components/home/ProductRowCard';
 import { ProductCard } from '../../components/home/ProductCard';
-import { colors, spacing, typography } from '../../theme';
+import { colors, spacing } from '../../theme';
 import { Icon } from '../../components/ui/Icon';
 
 type Props = CompositeScreenProps<
@@ -35,7 +36,6 @@ type Props = CompositeScreenProps<
 export const HomeScreen: React.FC<Props> = ({ navigation }) => {
   const dispatch = useAppDispatch();
   const { requireAuth } = useRequireAuth();
-  const [search, setSearch] = useState('');
   const wishlistIds = useAppSelector(state => state.wishlist.productIds);
   const cartCount = useAppSelector(state =>
     state.cart.items.reduce((sum, i) => sum + i.quantity, 0),
@@ -43,12 +43,7 @@ export const HomeScreen: React.FC<Props> = ({ navigation }) => {
   const unreadCount = useAppSelector(
     state => state.app.notifications.filter(n => !n.read).length,
   );
-
-  const filteredProducts = search
-    ? products.filter(p =>
-        p.name.toLowerCase().includes(search.toLowerCase()),
-      )
-    : products;
+  const location = useAppSelector(state => state.location.current);
 
   const bestsellers = products.filter(p => p.tags.includes('Bestseller'));
   const sameDayProducts = products.filter(p => p.sameDayDelivery);
@@ -56,12 +51,16 @@ export const HomeScreen: React.FC<Props> = ({ navigation }) => {
   return (
     <View style={styles.container}>
       <HomeHeader
-        search={search}
-        onSearchChange={setSearch}
+        locationLabel={`${location.shortLabel}, ${location.pincode}`}
+        onLocationPress={() => dispatch(openLocationSheet())}
         cartCount={cartCount}
         onCartPress={() => navigation.navigate('Cart')}
+        onSearchPress={() => navigation.navigate('Search')}
         onNotificationPress={() =>
-          requireAuth(() => navigation.navigate('Notifications'), 'Login to view notifications')
+          requireAuth(
+            () => navigation.navigate('Notifications'),
+            'Login to view notifications',
+          )
         }
         unreadCount={unreadCount}
       />
@@ -77,9 +76,7 @@ export const HomeScreen: React.FC<Props> = ({ navigation }) => {
           <Text style={styles.sectionTitle}>Shop by Occasion</Text>
           <OccasionChips
             chips={occasionChips}
-            onPress={() =>
-              navigation.getParent()?.navigate('OccasionsTab')
-            }
+            onPress={() => navigation.getParent()?.navigate('OccasionsTab')}
           />
         </View>
 
@@ -140,7 +137,7 @@ export const HomeScreen: React.FC<Props> = ({ navigation }) => {
         </View>
 
         <View style={[styles.section, styles.sameDaySection]}>
-            <View style={styles.sameDayHeader}>
+          <View style={styles.sameDayHeader}>
             <View style={styles.sameDayTitleRow}>
               <Icon name="flash" size={18} color={colors.green} />
               <Text style={styles.sameDayTitle}>Same Day Delivery</Text>
@@ -172,68 +169,40 @@ export const HomeScreen: React.FC<Props> = ({ navigation }) => {
           </ScrollView>
         </View>
 
-        {search ? (
-          <View style={styles.section}>
-            <Text style={styles.sectionTitle}>
-              Search Results ({filteredProducts.length})
-            </Text>
-            <View style={styles.grid}>
-              {filteredProducts.map(product => (
-                <ProductCard
-                  key={product.id}
-                  product={product}
-                  isWishlisted={wishlistIds.includes(product.id)}
-                  onPress={() =>
-                    navigation.navigate('ProductDetails', {
-                      productId: product.id,
-                    })
-                  }
-                  onWishlistPress={() =>
-                    requireAuth(
-                      () => dispatch(toggleWishlist(product.id)),
-                      'Login to save to wishlist',
-                    )
-                  }
-                />
-              ))}
-            </View>
+        <View style={styles.section}>
+          <View style={styles.sectionHeader}>
+            <Text style={styles.sectionTitle}>Popular Gifts</Text>
+            <TouchableOpacity
+              onPress={() =>
+                navigation.navigate('ProductListing', {
+                  categoryId: 'flowers',
+                  title: 'All Gifts',
+                })
+              }>
+              <Text style={styles.seeAll}>View All</Text>
+            </TouchableOpacity>
           </View>
-        ) : (
-          <View style={styles.section}>
-            <View style={styles.sectionHeader}>
-              <Text style={styles.sectionTitle}>Popular Gifts</Text>
-              <TouchableOpacity
+          <View style={styles.grid}>
+            {products.slice(0, 4).map(product => (
+              <ProductCard
+                key={product.id}
+                product={product}
+                isWishlisted={wishlistIds.includes(product.id)}
                 onPress={() =>
-                  navigation.navigate('ProductListing', {
-                    categoryId: 'flowers',
-                    title: 'All Gifts',
+                  navigation.navigate('ProductDetails', {
+                    productId: product.id,
                   })
-                }>
-                <Text style={styles.seeAll}>View All</Text>
-              </TouchableOpacity>
-            </View>
-            <View style={styles.grid}>
-              {products.slice(0, 4).map(product => (
-                <ProductCard
-                  key={product.id}
-                  product={product}
-                  isWishlisted={wishlistIds.includes(product.id)}
-                  onPress={() =>
-                    navigation.navigate('ProductDetails', {
-                      productId: product.id,
-                    })
-                  }
-                  onWishlistPress={() =>
-                    requireAuth(
-                      () => dispatch(toggleWishlist(product.id)),
-                      'Login to save to wishlist',
-                    )
-                  }
-                />
-              ))}
-            </View>
+                }
+                onWishlistPress={() =>
+                  requireAuth(
+                    () => dispatch(toggleWishlist(product.id)),
+                    'Login to save to wishlist',
+                  )
+                }
+              />
+            ))}
           </View>
-        )}
+        </View>
 
         <View style={styles.trustSection}>
           {[

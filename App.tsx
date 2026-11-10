@@ -14,6 +14,7 @@ import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { store } from './src/store';
 import { RootNavigator } from './src/navigation/RootNavigator';
 import { LoginModal } from './src/components/auth/LoginModal';
+import { LocationBottomSheet } from './src/components/location/LocationBottomSheet';
 import { colors } from './src/theme';
 
 function App() {
@@ -28,6 +29,7 @@ function App() {
             />
             <RootNavigator />
             <LoginModal />
+            <LocationBottomSheet />
           </NavigationContainer>
         </SafeAreaProvider>
       </Provider>

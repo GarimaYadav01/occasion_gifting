@@ -6,8 +6,8 @@ import { MainTabParamList } from './types';
 import { HomeStackNavigator } from './HomeStackNavigator';
 import { OccasionsStackNavigator } from './OccasionsStackNavigator';
 import { OrdersStackNavigator } from './OrdersStackNavigator';
+import { WishlistStackNavigator } from './WishlistStackNavigator';
 import { ProfileStackNavigator } from './ProfileStackNavigator';
-import { WishlistScreen } from '../screens/profile/WishlistScreen';
 import { TabBarIcon } from '../components/layout/TabBarIcon';
 import { colors, spacing } from '../theme';
 
@@ -26,7 +26,7 @@ export const MainTabNavigator = () => {
           height: tabBarHeight,
           paddingBottom: insets.bottom > 0 ? insets.bottom : spacing.sm,
         },
-        tabBarActiveTintColor: colors.skyBlue,
+        tabBarActiveTintColor: colors.purple,
         tabBarInactiveTintColor: colors.textMuted,
         tabBarLabelStyle: styles.tabLabel,
         tabBarIcon: ({ focused }) => (
@@ -50,7 +50,7 @@ export const MainTabNavigator = () => {
       />
       <Tab.Screen
         name="WishlistTab"
-        component={WishlistScreen}
+        component={WishlistStackNavigator}
         options={{ tabBarLabel: 'Wishlist' }}
       />
       <Tab.Screen

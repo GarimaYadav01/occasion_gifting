@@ -7,6 +7,7 @@ import {
   ViewStyle,
   TextStyle,
 } from 'react-native';
+import LinearGradient from 'react-native-linear-gradient';
 import { colors, radius, spacing, typography } from '../../theme';
 
 type ButtonVariant = 'primary' | 'secondary' | 'outline' | 'ghost';
@@ -36,6 +37,41 @@ export const Button: React.FC<ButtonProps> = ({
   fullWidth = false,
 }) => {
   const isDisabled = disabled || loading;
+  const label = loading ? (
+    <ActivityIndicator
+      color={
+        variant === 'outline' || variant === 'ghost' ? colors.purple : colors.white
+      }
+    />
+  ) : (
+    <Text
+      style={[
+        styles.text,
+        styles[`text_${variant}`],
+        styles[`textSize_${size}`],
+        textStyle,
+      ]}>
+      {title}
+    </Text>
+  );
+
+  if (variant === 'primary') {
+    return (
+      <TouchableOpacity
+        activeOpacity={0.85}
+        onPress={onPress}
+        disabled={isDisabled}
+        style={[fullWidth && styles.fullWidth, isDisabled && styles.disabled, style]}>
+        <LinearGradient
+          colors={[colors.gradientStart, colors.gradientEnd]}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 1, y: 0 }}
+          style={[styles.base, styles.sizeWrap, styles[`size_${size}`]]}>
+          {label}
+        </LinearGradient>
+      </TouchableOpacity>
+    );
+  }
 
   return (
     <TouchableOpacity
@@ -50,21 +86,7 @@ export const Button: React.FC<ButtonProps> = ({
         isDisabled && styles.disabled,
         style,
       ]}>
-      {loading ? (
-        <ActivityIndicator
-          color={variant === 'outline' || variant === 'ghost' ? colors.skyBlue : colors.white}
-        />
-      ) : (
-        <Text
-          style={[
-            styles.text,
-            styles[`text_${variant}`],
-            styles[`textSize_${size}`],
-            textStyle,
-          ]}>
-          {title}
-        </Text>
-      )}
+      {label}
     </TouchableOpacity>
   );
 };
@@ -75,8 +97,11 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     borderRadius: radius.lg,
   },
+  sizeWrap: {
+    overflow: 'hidden',
+  },
   primary: {
-    backgroundColor: colors.skyBlue,
+    backgroundColor: colors.purple,
   },
   secondary: {
     backgroundColor: colors.navy,
@@ -84,7 +109,7 @@ const styles = StyleSheet.create({
   outline: {
     backgroundColor: colors.white,
     borderWidth: 1.5,
-    borderColor: colors.skyBlue,
+    borderColor: colors.purple,
   },
   ghost: {
     backgroundColor: colors.purpleLight,
@@ -117,10 +142,10 @@ const styles = StyleSheet.create({
     color: colors.white,
   },
   text_outline: {
-    color: colors.skyBlue,
+    color: colors.purple,
   },
   text_ghost: {
-    color: colors.skyBlue,
+    color: colors.purple,
   },
   textSize_sm: {
     fontSize: 14,

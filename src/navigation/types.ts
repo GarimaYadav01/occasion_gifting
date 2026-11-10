@@ -3,6 +3,7 @@ import { EventServiceType, OccasionType } from '../types';
 
 export type HomeStackParamList = {
   Home: undefined;
+  Search: undefined;
   Categories: { categoryId?: string } | undefined;
   ProductListing: { categoryId: string; title: string };
   ProductDetails: { productId: string };
@@ -36,13 +37,22 @@ export type OrdersStackParamList = {
 export type ProfileStackParamList = {
   Profile: undefined;
   Notifications: undefined;
+  Orders: undefined;
+  OrderTracking: { orderId: string };
+  Reminders: undefined;
+  Addresses: undefined;
+  Support: undefined;
+};
+
+export type WishlistStackParamList = {
+  Wishlist: undefined;
 };
 
 export type MainTabParamList = {
   HomeTab: NavigatorScreenParams<HomeStackParamList>;
   OccasionsTab: NavigatorScreenParams<OccasionsStackParamList>;
   OrdersTab: NavigatorScreenParams<OrdersStackParamList>;
-  WishlistTab: undefined;
+  WishlistTab: NavigatorScreenParams<WishlistStackParamList>;
   ProfileTab: NavigatorScreenParams<ProfileStackParamList>;
 };
 

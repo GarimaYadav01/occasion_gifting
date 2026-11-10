@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Alert, Image } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, Alert } from 'react-native';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { ProfileStackParamList } from '../../navigation/types';
 import { useAppDispatch, useAppSelector } from '../../store/hooks';
@@ -16,12 +16,12 @@ import { GradientButton } from '../../components/ui/GradientButton';
 type Props = NativeStackScreenProps<ProfileStackParamList, 'Profile'>;
 
 const menuItems = [
-  { id: 'orders', label: 'My Orders', icon: 'package-variant', screen: 'OrdersTab' as const, needsAuth: true },
+  { id: 'orders', label: 'My Orders', icon: 'package-variant', screen: 'Orders' as const, needsAuth: true },
   { id: 'wishlist', label: 'Wishlist', icon: 'heart-outline', screen: 'WishlistTab' as const, needsAuth: true },
   { id: 'notifications', label: 'Notifications', icon: 'bell-outline', screen: 'Notifications' as const, needsAuth: true },
-  { id: 'reminders', label: 'Smart Reminders', icon: 'alarm', screen: null, needsAuth: true },
-  { id: 'addresses', label: 'Saved Addresses', icon: 'map-marker-outline', screen: null, needsAuth: true },
-  { id: 'support', label: 'Help & Support', icon: 'help-circle-outline', screen: null, needsAuth: false },
+  { id: 'reminders', label: 'Smart Reminders', icon: 'alarm', screen: 'Reminders' as const, needsAuth: true },
+  { id: 'addresses', label: 'Saved Addresses', icon: 'map-marker-outline', screen: 'Addresses' as const, needsAuth: true },
+  { id: 'support', label: 'Help & Support', icon: 'help-circle-outline', screen: 'Support' as const, needsAuth: false },
 ];
 
 export const ProfileScreen: React.FC<Props> = ({ navigation }) => {
@@ -45,10 +45,10 @@ export const ProfileScreen: React.FC<Props> = ({ navigation }) => {
 
   const handleMenuPress = (item: (typeof menuItems)[0]) => {
     const navigate = () => {
-      if (item.screen === 'Notifications') {
-        navigation.navigate('Notifications');
-      } else if (item.screen === 'OrdersTab' || item.screen === 'WishlistTab') {
-        navigation.getParent()?.navigate(item.screen);
+      if (item.screen === 'WishlistTab') {
+        navigation.getParent()?.navigate('WishlistTab');
+      } else {
+        navigation.navigate(item.screen);
       }
     };
 
@@ -63,7 +63,7 @@ export const ProfileScreen: React.FC<Props> = ({ navigation }) => {
     <ScreenContainer contentStyle={styles.content}>
       <Header title="Profile" subtitle="Manage your account" />
 
-      <Card variant="cream" style={styles.profileCard}>
+      <Card variant="gradient" style={styles.profileCard}>
         <View style={styles.avatar}>
           <Icon
             name={isAuthenticated ? 'account-circle' : 'account-outline'}

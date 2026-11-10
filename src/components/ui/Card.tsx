@@ -1,12 +1,19 @@
 import React from 'react';
-import { View, StyleSheet, ViewStyle, TouchableOpacity, StyleProp } from 'react-native';
+import {
+  View,
+  StyleSheet,
+  ViewStyle,
+  TouchableOpacity,
+  StyleProp,
+} from 'react-native';
+import LinearGradient from 'react-native-linear-gradient';
 import { colors, radius, spacing } from '../../theme';
 
 interface CardProps {
   children: React.ReactNode;
   style?: StyleProp<ViewStyle>;
   onPress?: () => void;
-  variant?: 'default' | 'elevated' | 'cream';
+  variant?: 'default' | 'elevated' | 'cream' | 'gradient';
 }
 
 export const Card: React.FC<CardProps> = ({
@@ -15,9 +22,18 @@ export const Card: React.FC<CardProps> = ({
   onPress,
   variant = 'default',
 }) => {
-  const content = (
-    <View style={[styles.base, styles[variant], style]}>{children}</View>
-  );
+  const content =
+    variant === 'gradient' ? (
+      <LinearGradient
+        colors={[colors.purpleLight, colors.white]}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 1, y: 1 }}
+        style={[styles.base, styles.gradient, style]}>
+        {children}
+      </LinearGradient>
+    ) : (
+      <View style={[styles.base, styles[variant], style]}>{children}</View>
+    );
 
   if (onPress) {
     return (
@@ -42,12 +58,17 @@ const styles = StyleSheet.create({
   elevated: {
     shadowColor: colors.purple,
     shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.1,
+    shadowOpacity: 0.14,
     shadowRadius: 12,
     elevation: 4,
+    borderColor: colors.border,
   },
   cream: {
     backgroundColor: colors.cream,
     borderColor: colors.creamDark,
+  },
+  gradient: {
+    borderColor: colors.border,
+    overflow: 'hidden',
   },
 });
