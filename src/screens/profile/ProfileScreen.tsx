@@ -1,256 +1,136 @@
-import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Alert } from 'react-native';
-import { NativeStackScreenProps } from '@react-navigation/native-stack';
-import { ProfileStackParamList } from '../../navigation/types';
-import { useAppDispatch, useAppSelector } from '../../store/hooks';
-import { logout, openLoginModal } from '../../store/slices/authSlice';
-import { useRequireAuth } from '../../hooks/useRequireAuth';
-import { ScreenContainer } from '../../components/ui/ScreenContainer';
-import { Header } from '../../components/layout/Header';
-import { Card } from '../../components/ui/Card';
-import { Button } from '../../components/ui/Button';
-import { colors, radius, spacing, typography } from '../../theme';
-import { Icon } from '../../components/ui/Icon';
-import { GradientButton } from '../../components/ui/GradientButton';
+import React, { useState } from 'react';
+import { ScrollView, StyleSheet, Switch, Text, View } from 'react-native';
+import LinearGradient from '../../components/Gradient';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { Card, ListRow } from '../../components/Bits';
+import { Img } from '../../components/Img';
+import { Tap } from '../../components/Tap';
+import { Icon } from '../../components/Icon';
+import { Button } from '../../components/Button';
+import { Sheet } from '../../components/Sheet';
+import { useAppDispatch, useAppSelector } from '../../store';
+import { logout, setMode } from '../../store/slices/app';
+import { useNav, useStatusBar, useTheme } from '../../utils/hooks';
+import { daysUntilYearly } from '../../utils/format';
 
-type Props = NativeStackScreenProps<ProfileStackParamList, 'Profile'>;
+const Group = ({ title, children }: { title: string; children: React.ReactNode }) => (
+  <>
+    <Text style={styles.group}>{title}</Text>
+    <Card style={{ paddingVertical: 4 }}>{children}</Card>
+  </>
+);
 
-const menuItems = [
-  { id: 'orders', label: 'My Orders', icon: 'package-variant', screen: 'Orders' as const, needsAuth: true },
-  { id: 'wishlist', label: 'Wishlist', icon: 'heart-outline', screen: 'WishlistTab' as const, needsAuth: true },
-  { id: 'notifications', label: 'Notifications', icon: 'bell-outline', screen: 'Notifications' as const, needsAuth: true },
-  { id: 'reminders', label: 'Smart Reminders', icon: 'alarm', screen: 'Reminders' as const, needsAuth: true },
-  { id: 'addresses', label: 'Saved Addresses', icon: 'map-marker-outline', screen: 'Addresses' as const, needsAuth: true },
-  { id: 'support', label: 'Help & Support', icon: 'help-circle-outline', screen: 'Support' as const, needsAuth: false },
-];
-
-export const ProfileScreen: React.FC<Props> = ({ navigation }) => {
+export const ProfileScreen = () => {
+  const { c, mode } = useTheme();
+  const nav = useNav();
+  const insets = useSafeAreaInsets();
   const dispatch = useAppDispatch();
-  const { requireAuth, isAuthenticated } = useRequireAuth();
-  const user = useAppSelector(state => state.auth.user);
-  const unreadCount = useAppSelector(
-    state => state.app.notifications.filter(n => !n.read).length,
-  );
-
-  const handleLogout = () => {
-    Alert.alert('Logout', 'Are you sure you want to logout?', [
-      { text: 'Cancel', style: 'cancel' },
-      {
-        text: 'Logout',
-        style: 'destructive',
-        onPress: () => dispatch(logout()),
-      },
-    ]);
-  };
-
-  const handleMenuPress = (item: (typeof menuItems)[0]) => {
-    const navigate = () => {
-      if (item.screen === 'WishlistTab') {
-        navigation.getParent()?.navigate('WishlistTab');
-      } else {
-        navigation.navigate(item.screen);
-      }
-    };
-
-    if (item.needsAuth) {
-      requireAuth(navigate, `Login to access ${item.label.toLowerCase()}`);
-    } else {
-      navigate();
-    }
-  };
+  useStatusBar('light-content');
+  const user = useAppSelector(s => s.app.user);
+  const gifts = useAppSelector(s => s.orders.gifts.length);
+  const bookings = useAppSelector(s => s.orders.bookings.length);
+  const wish = useAppSelector(s => s.shop.wishProducts.length + s.shop.wishVendors.length);
+  const reminders = useAppSelector(s => s.profile.reminders);
+  const addresses = useAppSelector(s => s.profile.addresses.length);
+  const [notif, setNotif] = useState(true);
+  const [confirm, setConfirm] = useState(false);
+  const next = [...reminders].sort((a, b) => daysUntilYearly(a.date) - daysUntilYearly(b.date))[0];
 
   return (
-    <ScreenContainer contentStyle={styles.content}>
-      <Header title="Profile" subtitle="Manage your account" />
+    <View style={{ flex: 1, backgroundColor: c.bg }}>
+      <ScrollView contentContainerStyle={{ paddingBottom: 30 }} showsVerticalScrollIndicator={false}>
+        <LinearGradient colors={c.header} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={{ paddingTop: insets.top + 12, paddingHorizontal: 16, paddingBottom: 60 }}>
+          <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+            <Img uri={user.avatar} style={styles.avatar} />
+            <View style={{ flex: 1, marginLeft: 14 }}>
+              <Text style={{ color: '#fff', fontSize: 21, fontWeight: '900' }}>{user.name}</Text>
+              <Text style={{ color: 'rgba(255,255,255,0.8)', marginTop: 2, fontWeight: '600' }}>+91 {user.phone}</Text>
+              <Text style={{ color: 'rgba(255,255,255,0.8)', fontWeight: '600', fontSize: 12 }}>{user.email}</Text>
+            </View>
+            <Tap onPress={() => nav.navigate('EditProfile')} style={styles.edit}><Icon name="pencil" size={18} color="#fff" /></Tap>
+          </View>
+          <View style={styles.member}>
+            <Icon name="crown" size={18} color="#FFD27A" />
+            <Text style={{ color: '#fff', fontWeight: '800', marginLeft: 6, flex: 1 }}>Occasion Gold member</Text>
+            <Text style={{ color: '#FFD27A', fontWeight: '800', fontSize: 12 }}>₹350 wallet</Text>
+          </View>
+        </LinearGradient>
 
-      <Card variant="gradient" style={styles.profileCard}>
-        <View style={styles.avatar}>
-          <Icon
-            name={isAuthenticated ? 'account-circle' : 'account-outline'}
-            size={40}
-            color={colors.skyBlue}
-          />
+        <View style={{ paddingHorizontal: 16, marginTop: -44 }}>
+          <Card style={{ flexDirection: 'row', paddingVertical: 16 }}>
+            {[['package-variant', gifts, 'Gift orders', () => nav.navigate('Main', { screen: 'Orders', params: { tab: 'gifts' } })], ['party-popper', bookings, 'Bookings', () => nav.navigate('Main', { screen: 'Orders', params: { tab: 'events' } })], ['heart-outline', wish, 'Wishlist', () => nav.navigate('Wishlist')], ['calendar-heart', reminders.length, 'Reminders', () => nav.navigate('Reminders')]].map(([i, n, l, fn]: any) => (
+              <Tap key={l} onPress={fn} style={{ flex: 1, alignItems: 'center' }}>
+                <View style={[styles.statIcon, { backgroundColor: c.tint }]}><Icon name={i} size={20} color={c.ink} /></View>
+                <Text style={{ fontWeight: '900', color: c.text, fontSize: 16, marginTop: 6 }}>{n}</Text>
+                <Text style={{ fontSize: 11, color: c.sub, fontWeight: '600' }}>{l}</Text>
+              </Tap>
+            ))}
+          </Card>
+
+          {next && (
+            <Tap scale={0.98} onPress={() => nav.navigate('Reminders')} style={[styles.remind, { backgroundColor: c.accentSoft }]}>
+              <Icon name="cake-variant" size={22} color={c.accent} />
+              <Text style={{ flex: 1, marginLeft: 10, fontWeight: '700', color: c.text }}>{next.name}'s {next.type.toLowerCase()} is in <Text style={{ fontWeight: '900', color: c.accent }}>{daysUntilYearly(next.date)} days</Text></Text>
+              <Icon name="chevron-right" size={20} color={c.accent} />
+            </Tap>
+          )}
+
+          <Group title="APP MODE">
+            <View style={{ flexDirection: 'row', gap: 10, paddingVertical: 10 }}>
+              {([['gifts', 'Gifting', 'gift'], ['events', 'Events', 'party-popper']] as const).map(([k, l, i]) => (
+                <Tap key={k} onPress={() => dispatch(setMode(k))} style={[styles.modeBtn, { borderColor: mode === k ? c.ink : c.line, backgroundColor: mode === k ? c.tint : c.white }]}>
+                  <Icon name={i} size={20} color={mode === k ? c.ink : c.sub} />
+                  <Text style={{ marginLeft: 6, fontWeight: '800', color: mode === k ? c.ink : c.sub }}>{l}</Text>
+                </Tap>
+              ))}
+            </View>
+          </Group>
+
+          <Group title="MY ACCOUNT">
+            <ListRow icon="account-edit-outline" title="Edit profile" sub="Name, email, birthday" onPress={() => nav.navigate('EditProfile')} />
+            <ListRow icon="map-marker-outline" title="Saved addresses" sub={`${addresses} saved`} onPress={() => nav.navigate('Addresses')} />
+            <ListRow icon="heart-outline" title="My wishlist" sub="Gifts & vendors you saved" onPress={() => nav.navigate('Wishlist')} />
+            <ListRow icon="credit-card-outline" title="Payment methods" sub="UPI, cards & wallet" onPress={() => nav.navigate('PaymentMethods')} />
+          </Group>
+
+          <Group title="ORDERS & BOOKINGS">
+            <ListRow icon="package-variant-closed" title="My gift orders" onPress={() => nav.navigate('Main', { screen: 'Orders', params: { tab: 'gifts' } })} />
+            <ListRow icon="calendar-star" title="My event bookings" onPress={() => nav.navigate('Main', { screen: 'Orders', params: { tab: 'events' } })} />
+            <ListRow icon="calendar-heart" title="Occasion reminders" sub="Birthdays & anniversaries" onPress={() => nav.navigate('Reminders')} />
+            <ListRow icon="bell-outline" title="Notifications" onPress={() => nav.navigate('Notifications')} right={<Switch value={notif} onValueChange={setNotif} trackColor={{ true: c.primary, false: c.line }} thumbColor="#fff" />} />
+          </Group>
+
+          <Group title="SUPPORT & LEGAL">
+            <ListRow icon="lifebuoy" title="Help & support" sub="FAQs, chat with us" onPress={() => nav.navigate('Help')} />
+            <ListRow icon="information-outline" title="About us" onPress={() => nav.navigate('Info', { page: 'about' })} />
+            <ListRow icon="shield-lock-outline" title="Privacy policy" onPress={() => nav.navigate('Info', { page: 'privacy' })} />
+            <ListRow icon="file-document-outline" title="Terms & conditions" onPress={() => nav.navigate('Info', { page: 'terms' })} />
+          </Group>
+
+          <Card style={{ marginTop: 16, paddingVertical: 4 }}>
+            <ListRow icon="logout" title="Log out" danger onPress={() => setConfirm(true)} right={<View />} />
+          </Card>
+          <Text style={{ textAlign: 'center', color: c.muted, fontSize: 11, marginTop: 16 }}>Occasion v1.0.0 · Made in India 🇮🇳</Text>
         </View>
-        <Text style={styles.userName}>
-          {isAuthenticated ? user?.name ?? 'User' : 'Welcome, Guest'}
-        </Text>
-        {isAuthenticated ? (
-          <>
-            <Text style={styles.userPhone}>+91 {user?.phone}</Text>
-            <Text style={styles.userEmail}>{user?.email}</Text>
-          </>
-        ) : (
-          <Text style={styles.guestHint}>
-            Login to track orders, save wishlist & more
-          </Text>
-        )}
-        {!isAuthenticated ? (
-          <GradientButton
-            title="Login / Sign Up"
-            onPress={() => dispatch(openLoginModal('Login to your account'))}
-            style={styles.loginBtn}
-            fullWidth
-          />
-        ) : null}
-      </Card>
+      </ScrollView>
 
-      {isAuthenticated ? (
-        <View style={styles.statsRow}>
-          <Card style={styles.statCard}>
-            <Text style={styles.statValue}>12</Text>
-            <Text style={styles.statLabel}>Gifts Sent</Text>
-          </Card>
-          <Card style={styles.statCard}>
-            <Text style={styles.statValue}>3</Text>
-            <Text style={styles.statLabel}>Events</Text>
-          </Card>
-          <Card style={styles.statCard}>
-            <Text style={styles.statValue}>5</Text>
-            <Text style={styles.statLabel}>Reminders</Text>
-          </Card>
+      <Sheet visible={confirm} onClose={() => setConfirm(false)} title="Log out?">
+        <Text style={{ color: c.sub, marginBottom: 18 }}>You'll need to verify your mobile number again to sign back in. Your cart and wishlist are saved.</Text>
+        <View style={{ flexDirection: 'row', gap: 10 }}>
+          <Button title="Cancel" variant="outline" style={{ flex: 1 }} onPress={() => setConfirm(false)} />
+          <Button title="Log out" variant="dark" style={{ flex: 1 }} onPress={() => { setConfirm(false); dispatch(logout()); nav.reset({ index: 0, routes: [{ name: 'Login' }] }); }} />
         </View>
-      ) : null}
-
-      <Text style={styles.menuTitle}>Account</Text>
-      {menuItems.map(item => (
-        <TouchableOpacity
-          key={item.id}
-          activeOpacity={0.85}
-          onPress={() => handleMenuPress(item)}>
-          <Card style={styles.menuItem}>
-            <Icon name={item.icon} size={22} color={colors.skyBlue} style={styles.menuIcon} />
-            <Text style={styles.menuLabel}>{item.label}</Text>
-            {item.id === 'notifications' && unreadCount > 0 && isAuthenticated ? (
-              <View style={styles.menuBadge}>
-                <Text style={styles.menuBadgeText}>{unreadCount}</Text>
-              </View>
-            ) : null}
-            <Icon name="chevron-right" size={20} color={colors.textMuted} />
-          </Card>
-        </TouchableOpacity>
-      ))}
-
-      {isAuthenticated ? (
-        <Button
-          title="Logout"
-          onPress={handleLogout}
-          variant="outline"
-          fullWidth
-          style={styles.logoutBtn}
-        />
-      ) : null}
-
-      <Text style={styles.version}>ONG · Occasion & Gifting v1.0</Text>
-    </ScreenContainer>
+      </Sheet>
+    </View>
   );
 };
 
 const styles = StyleSheet.create({
-  content: {
-    paddingBottom: spacing.huge,
-  },
-  profileCard: {
-    alignItems: 'center',
-    paddingVertical: spacing.xxl,
-    marginBottom: spacing.lg,
-  },
-  avatar: {
-    width: 80,
-    height: 80,
-    borderRadius: 40,
-    backgroundColor: colors.purpleLight,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginBottom: spacing.lg,
-  },
-  avatarEmoji: {
-    fontSize: 40,
-  },
-  userName: {
-    ...typography.h2,
-    marginBottom: spacing.xs,
-  },
-  userPhone: {
-    ...typography.body,
-    color: colors.textSecondary,
-    marginBottom: 2,
-  },
-  userEmail: {
-    ...typography.bodySmall,
-  },
-  guestHint: {
-    ...typography.bodySmall,
-    textAlign: 'center',
-    marginTop: spacing.xs,
-    marginBottom: spacing.lg,
-  },
-  loginBtn: {
-    marginTop: spacing.sm,
-  },
-  statsRow: {
-    flexDirection: 'row',
-    gap: spacing.sm,
-    marginBottom: spacing.xxl,
-  },
-  statCard: {
-    flex: 1,
-    alignItems: 'center',
-    paddingVertical: spacing.lg,
-  },
-  statValue: {
-    ...typography.h2,
-    color: colors.skyBlue,
-  },
-  statLabel: {
-    ...typography.caption,
-    textTransform: 'none',
-    textAlign: 'center',
-    marginTop: spacing.xs,
-  },
-  menuTitle: {
-    ...typography.label,
-    marginBottom: spacing.md,
-  },
-  menuItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: spacing.sm,
-    paddingVertical: spacing.md,
-  },
-  menuIcon: {
-    marginRight: spacing.md,
-  },
-  menuLabel: {
-    ...typography.body,
-    flex: 1,
-    fontWeight: '500',
-  },
-  menuBadge: {
-    backgroundColor: colors.accent,
-    borderRadius: 10,
-    minWidth: 20,
-    height: 20,
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingHorizontal: 6,
-    marginRight: spacing.sm,
-  },
-  menuBadgeText: {
-    color: colors.white,
-    fontSize: 11,
-    fontWeight: '700',
-  },
-  menuArrow: {
-    display: 'none',
-  },
-  logoutBtn: {
-    marginTop: spacing.xxl,
-    marginBottom: spacing.lg,
-  },
-  version: {
-    ...typography.caption,
-    textAlign: 'center',
-    textTransform: 'none',
-    marginBottom: spacing.lg,
-  },
+  avatar: { width: 70, height: 70, borderRadius: 35, borderWidth: 3, borderColor: 'rgba(255,255,255,0.8)' },
+  edit: { width: 40, height: 40, borderRadius: 20, backgroundColor: 'rgba(255,255,255,0.18)', alignItems: 'center', justifyContent: 'center' },
+  member: { flexDirection: 'row', alignItems: 'center', backgroundColor: 'rgba(255,255,255,0.12)', padding: 10, borderRadius: 12, marginTop: 16 },
+  statIcon: { width: 40, height: 40, borderRadius: 20, alignItems: 'center', justifyContent: 'center' },
+  remind: { flexDirection: 'row', alignItems: 'center', padding: 12, borderRadius: 14, marginTop: 14 },
+  group: { fontSize: 12, fontWeight: '900', color: '#A39BAD', letterSpacing: 1, marginTop: 22, marginBottom: 8, marginLeft: 4 },
+  modeBtn: { flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', height: 46, borderRadius: 12, borderWidth: 1.4 },
 });

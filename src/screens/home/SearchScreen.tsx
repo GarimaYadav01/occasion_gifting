@@ -1,211 +1,123 @@
 import React, { useMemo, useState } from 'react';
-import {
-  View,
-  Text,
-  StyleSheet,
-  TextInput,
-  TouchableOpacity,
-} from 'react-native';
-import { NativeStackScreenProps } from '@react-navigation/native-stack';
-import { HomeStackParamList } from '../../navigation/types';
-import { giftCategories, products } from '../../data/mockData';
-import { useAppDispatch, useAppSelector } from '../../store/hooks';
-import { toggleWishlist } from '../../store/slices/wishlistSlice';
-import { useRequireAuth } from '../../hooks/useRequireAuth';
-import { ScreenContainer } from '../../components/ui/ScreenContainer';
-import { Header } from '../../components/layout/Header';
-import { ProductCard } from '../../components/home/ProductCard';
-import { Icon } from '../../components/ui/Icon';
-import { Card } from '../../components/ui/Card';
-import { colors, radius, spacing, typography } from '../../theme';
+import { ScrollView, StyleSheet, Text, View } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { SearchBar } from '../../components/SearchBar';
+import { Tap } from '../../components/Tap';
+import { Icon } from '../../components/Icon';
+import { Chip, Skeleton } from '../../components/Bits';
+import { ProductRow } from '../../components/ProductCard';
+import { VendorRow } from '../../components/VendorCard';
+import { EmptyState } from '../../components/States';
+import { products, giftCategories } from '../../data/gifts';
+import { vendors, serviceCategories } from '../../data/events';
+import { useAppDispatch } from '../../store';
+import { setMode } from '../../store/slices/app';
+import { useNav, useStatusBar, useTheme } from '../../utils/hooks';
 
-type Props = NativeStackScreenProps<HomeStackParamList, 'Search'>;
-
-export const SearchScreen: React.FC<Props> = ({ navigation }) => {
+export const SearchScreen = () => {
+  const { c, mode } = useTheme();
+  const nav = useNav();
   const dispatch = useAppDispatch();
-  const { requireAuth } = useRequireAuth();
-  const [query, setQuery] = useState('');
-  const wishlistIds = useAppSelector(state => state.wishlist.productIds);
+  const insets = useSafeAreaInsets();
+  useStatusBar('dark-content');
+  const [q, setQ] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [recent, setRecent] = useState(['red roses', 'chocolate cake', 'balloon decoration', 'DJ']);
 
-  const trimmed = query.trim().toLowerCase();
+  const onChange = (t: string) => {
+    setQ(t);
+    setLoading(true);
+    setTimeout(() => setLoading(false), 350);
+  };
 
-  const matchedCategories = useMemo(() => {
-    if (!trimmed) return giftCategories;
-    return giftCategories.filter(
-      c =>
-        c.name.toLowerCase().includes(trimmed) ||
-        c.description.toLowerCase().includes(trimmed),
-    );
-  }, [trimmed]);
+  const term = q.trim().toLowerCase();
+  const pr = useMemo(() => (term ? products.filter(p => `${p.name} ${p.category} ${p.sub} ${p.seller} ${p.occasions.join(' ')}`.toLowerCase().includes(term)) : []), [term]);
+  const vr = useMemo(() => (term ? vendors.filter(v => `${v.name} ${v.service} ${v.subs.join(' ')} ${v.area}`.toLowerCase().includes(term)) : []), [term]);
+  const giftsFirst = mode === 'gifts';
 
-  const matchedProducts = useMemo(() => {
-    if (!trimmed) return products;
-    return products.filter(
-      p =>
-        p.name.toLowerCase().includes(trimmed) ||
-        p.description.toLowerCase().includes(trimmed) ||
-        p.tags.some(t => t.toLowerCase().includes(trimmed)) ||
-        p.category.toLowerCase().includes(trimmed),
-    );
-  }, [trimmed]);
+  const trendingGift = ['Red roses', 'Black forest', 'Midnight cake', 'Truffles', 'Hamper', 'Balloons'];
+  const trendingEvent = ['Balloon decoration', 'Photographer', 'DJ', 'Banquet hall', 'Bridal makeup', 'Catering'];
 
   return (
-    <ScreenContainer contentStyle={styles.content}>
-      <Header
-        title="Search"
-        subtitle="Products & categories"
-        showBack
-        onBack={() => navigation.goBack()}
-      />
-
-      <View style={styles.searchRow}>
-        <Icon name="magnify" size={20} color={colors.textMuted} />
-        <TextInput
-          style={styles.searchInput}
-          placeholder="Search products or categories..."
-          placeholderTextColor={colors.textMuted}
-          value={query}
-          onChangeText={setQuery}
-          autoFocus
-          returnKeyType="search"
-          clearButtonMode="while-editing"
-        />
-        {query.length > 0 ? (
-          <TouchableOpacity onPress={() => setQuery('')} hitSlop={8}>
-            <Icon name="close-circle" size={18} color={colors.textMuted} />
-          </TouchableOpacity>
-        ) : null}
+    <View style={{ flex: 1, backgroundColor: c.bg }}>
+      <View style={[styles.head, { paddingTop: insets.top + 8, backgroundColor: c.white, borderBottomColor: c.line }]}>
+        <Tap onPress={() => nav.goBack()} style={{ padding: 6, marginRight: 4 }}><Icon name="arrow-left" size={24} /></Tap>
+        <View style={{ flex: 1 }}><SearchBar value={q} onChangeText={onChange} autoFocus style={{ shadowOpacity: 0, elevation: 0 }} /></View>
       </View>
-
-      <Text style={styles.sectionTitle}>
-        Categories
-        {trimmed ? ` (${matchedCategories.length})` : ''}
-      </Text>
-      {matchedCategories.length === 0 ? (
-        <Text style={styles.emptyText}>No categories match your search</Text>
-      ) : (
-        matchedCategories.map(category => (
-          <TouchableOpacity
-            key={category.id}
-            activeOpacity={0.85}
-            onPress={() =>
-              navigation.navigate('ProductListing', {
-                categoryId: category.id,
-                title: category.name,
-              })
-            }>
-            <Card style={styles.categoryRow}>
-              <View style={styles.categoryIcon}>
-                <Icon name={category.icon} size={22} color={colors.skyBlue} />
+      <ScrollView keyboardShouldPersistTaps="handled" contentContainerStyle={{ padding: 16, paddingBottom: 40 }}>
+        {!term ? (
+          <>
+            {recent.length > 0 && (
+              <>
+                <View style={styles.rowBetween}>
+                  <Text style={styles.label}>RECENT SEARCHES</Text>
+                  <Tap onPress={() => setRecent([])}><Text style={{ color: c.ink, fontWeight: '800', fontSize: 12 }}>Clear</Text></Tap>
+                </View>
+                <View style={styles.wrap}>
+                  {recent.map(r => <Chip key={r} label={r} icon="history" onPress={() => onChange(r)} style={{ marginBottom: 8 }} />)}
+                </View>
+              </>
+            )}
+            <Text style={[styles.label, { marginTop: 18 }]}>TRENDING {giftsFirst ? 'GIFTS' : 'EVENT SERVICES'}</Text>
+            <View style={styles.wrap}>
+              {(giftsFirst ? trendingGift : trendingEvent).map(r => <Chip key={r} label={r} icon="trending-up" onPress={() => onChange(r)} style={{ marginBottom: 8 }} />)}
+            </View>
+            <Text style={[styles.label, { marginTop: 18 }]}>BROWSE {giftsFirst ? 'CATEGORIES' : 'SERVICES'}</Text>
+            <View style={[styles.wrap, { gap: 10 }]}>
+              {giftsFirst
+                ? giftCategories.map(g => (
+                  <Tap key={g.id} onPress={() => nav.replace('ProductList', { category: g.id })} style={[styles.catBox, { backgroundColor: g.tint }]}>
+                    <Icon name={g.icon} size={22} color={c.ink} />
+                    <Text style={{ fontWeight: '700', marginTop: 6, color: c.text, fontSize: 12 }}>{g.name}</Text>
+                  </Tap>
+                ))
+                : serviceCategories.map(s => (
+                  <Tap key={s.id} onPress={() => nav.replace('ServiceCategory', { service: s.id })} style={[styles.catBox, { backgroundColor: s.tint }]}>
+                    <Icon name={s.icon} size={22} color={c.ink} />
+                    <Text style={{ fontWeight: '700', marginTop: 6, color: c.text, fontSize: 12 }}>{s.name}</Text>
+                  </Tap>
+                ))}
+            </View>
+          </>
+        ) : loading ? (
+          [0, 1, 2, 3].map(i => (
+            <View key={i} style={{ flexDirection: 'row', marginBottom: 14 }}>
+              <Skeleton style={{ width: 90, height: 90 }} />
+              <View style={{ flex: 1, marginLeft: 12, gap: 8 }}>
+                <Skeleton style={{ height: 14, width: '80%' }} />
+                <Skeleton style={{ height: 12, width: '50%' }} />
+                <Skeleton style={{ height: 24, width: '35%' }} />
               </View>
-              <View style={styles.categoryText}>
-                <Text style={styles.categoryName}>{category.name}</Text>
-                <Text style={styles.categoryDesc} numberOfLines={1}>
-                  {category.description}
-                </Text>
-              </View>
-              <Icon name="chevron-right" size={20} color={colors.textMuted} />
-            </Card>
-          </TouchableOpacity>
-        ))
-      )}
-
-      <Text style={[styles.sectionTitle, styles.productsTitle]}>
-        Products
-        {trimmed ? ` (${matchedProducts.length})` : ''}
-      </Text>
-      {matchedProducts.length === 0 ? (
-        <Text style={styles.emptyText}>No products match your search</Text>
-      ) : (
-        <View style={styles.grid}>
-          {matchedProducts.map(product => (
-            <ProductCard
-              key={product.id}
-              product={product}
-              isWishlisted={wishlistIds.includes(product.id)}
-              onPress={() =>
-                navigation.navigate('ProductDetails', {
-                  productId: product.id,
-                })
-              }
-              onWishlistPress={() =>
-                requireAuth(
-                  () => dispatch(toggleWishlist(product.id)),
-                  'Login to save to wishlist',
-                )
-              }
-            />
-          ))}
-        </View>
-      )}
-    </ScreenContainer>
+            </View>
+          ))
+        ) : pr.length + vr.length === 0 ? (
+          <EmptyState icon="magnify-close" title="No results found" body={`We couldn't find anything for "${q}". Try "cake", "roses" or "decorator".`} cta="Clear search" onCta={() => setQ('')} />
+        ) : (
+          <>
+            {(giftsFirst ? [['gifts', pr], ['events', vr]] : [['events', vr], ['gifts', pr]]).map(([k, list]: any) =>
+              list.length ? (
+                <View key={k} style={{ marginBottom: 12 }}>
+                  <View style={[styles.rowBetween, { marginBottom: 10 }]}>
+                    <Text style={styles.label}>{k === 'gifts' ? `GIFTS (${list.length})` : `EVENT VENDORS (${list.length})`}</Text>
+                    {k !== mode && (
+                      <Tap onPress={() => dispatch(setMode(k))}><Text style={{ color: c.ink, fontWeight: '800', fontSize: 12 }}>Switch to {k === 'gifts' ? 'Gifting' : 'Events'}</Text></Tap>
+                    )}
+                  </View>
+                  {list.map((it: any) => (k === 'gifts' ? <ProductRow key={it.id} p={it} /> : <VendorRow key={it.id} v={it} />))}
+                </View>
+              ) : null,
+            )}
+          </>
+        )}
+      </ScrollView>
+    </View>
   );
 };
 
 const styles = StyleSheet.create({
-  content: {
-    paddingBottom: spacing.huge,
-  },
-  searchRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: colors.surface,
-    borderRadius: radius.lg,
-    paddingHorizontal: spacing.md,
-    height: 48,
-    borderWidth: 1,
-    borderColor: colors.border,
-    gap: spacing.sm,
-    marginBottom: spacing.xl,
-  },
-  searchInput: {
-    flex: 1,
-    fontSize: 15,
-    color: colors.text,
-    paddingVertical: 0,
-  },
-  sectionTitle: {
-    ...typography.label,
-    marginBottom: spacing.md,
-  },
-  productsTitle: {
-    marginTop: spacing.lg,
-  },
-  emptyText: {
-    ...typography.bodySmall,
-    color: colors.textMuted,
-    marginBottom: spacing.md,
-  },
-  categoryRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: spacing.sm,
-    paddingVertical: spacing.md,
-  },
-  categoryIcon: {
-    width: 44,
-    height: 44,
-    borderRadius: 22,
-    backgroundColor: colors.purpleLight,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginRight: spacing.md,
-  },
-  categoryText: {
-    flex: 1,
-  },
-  categoryName: {
-    ...typography.body,
-    fontWeight: '600',
-  },
-  categoryDesc: {
-    ...typography.caption,
-    textTransform: 'none',
-    marginTop: 2,
-  },
-  grid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    justifyContent: 'space-between',
-  },
+  head: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: 10, paddingBottom: 10, borderBottomWidth: StyleSheet.hairlineWidth },
+  label: { fontSize: 12, fontWeight: '800', color: '#A39BAD', letterSpacing: 1, marginBottom: 10 },
+  rowBetween: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
+  wrap: { flexDirection: 'row', flexWrap: 'wrap' },
+  catBox: { width: '31%', paddingVertical: 14, borderRadius: 14, alignItems: 'center' },
 });

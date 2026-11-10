@@ -1,68 +1,49 @@
-import { NavigatorScreenParams } from '@react-navigation/native';
-import { EventServiceType, OccasionType } from '../types';
-
-export type HomeStackParamList = {
-  Home: undefined;
-  Search: undefined;
-  Categories: { categoryId?: string } | undefined;
-  ProductListing: { categoryId: string; title: string };
-  ProductDetails: { productId: string };
-  Cart: undefined;
-  Checkout: undefined;
-  OrderTracking: { orderId: string };
-  Notifications: undefined;
-};
-
-export type OccasionsStackParamList = {
-  OccasionBooking: undefined;
-  EventServices: { occasionId: OccasionType; occasionName: string };
-  VenueSelection: {
-    occasionId: OccasionType;
-    occasionName: string;
-    services: EventServiceType[];
-  };
-  EventCheckout: {
-    occasionId: OccasionType;
-    occasionName: string;
-    services: EventServiceType[];
-    venueId: string;
-  };
-};
-
-export type OrdersStackParamList = {
-  Orders: undefined;
-  OrderTracking: { orderId: string };
-};
-
-export type ProfileStackParamList = {
-  Profile: undefined;
-  Notifications: undefined;
-  Orders: undefined;
-  OrderTracking: { orderId: string };
-  Reminders: undefined;
-  Addresses: undefined;
-  Support: undefined;
-};
-
-export type WishlistStackParamList = {
-  Wishlist: undefined;
-};
-
-export type MainTabParamList = {
-  HomeTab: NavigatorScreenParams<HomeStackParamList>;
-  OccasionsTab: NavigatorScreenParams<OccasionsStackParamList>;
-  OrdersTab: NavigatorScreenParams<OrdersStackParamList>;
-  WishlistTab: NavigatorScreenParams<WishlistStackParamList>;
-  ProfileTab: NavigatorScreenParams<ProfileStackParamList>;
-};
-
 export type RootStackParamList = {
   Splash: undefined;
-  Main: NavigatorScreenParams<MainTabParamList>;
+  Onboarding: undefined;
+  Login: undefined;
+  Otp: { phone: string };
+  ProfileSetup: undefined;
+  Main: { screen?: keyof TabParamList; params?: any } | undefined;
+  Search: undefined;
+  Notifications: undefined;
+  ProductList: { category?: string; sub?: string; occasion?: string; title?: string; filter?: 'sameDay' | 'bestseller' | 'trending' | 'new' };
+  ProductDetails: { id: string };
+  Wishlist: undefined;
+  Cart: undefined;
+  Checkout: undefined;
+  OrderSuccess: { id: string };
+  ServiceCategory: { service: string; sub?: string; eventType?: string };
+  VendorDetails: { id: string; fromBooking?: boolean };
+  BookEventType: { eventType?: string } | undefined;
+  BookDate: undefined;
+  BookGuests: undefined;
+  BookServices: undefined;
+  BookProviders: { service?: string } | undefined;
+  BookCustomize: undefined;
+  BookVenue: undefined;
+  BookMap: undefined;
+  BookReview: undefined;
+  BookPayment: undefined;
+  BookConfirm: undefined;
+  BookingSuccess: { id: string };
+  GiftOrderDetails: { id: string };
+  BookingDetails: { id: string };
+  Review: { kind: 'gift' | 'event'; id: string };
+  EditProfile: undefined;
+  Addresses: { select?: boolean } | undefined;
+  AddressForm: { id?: string } | undefined;
+  Reminders: undefined;
+  AddReminder: undefined;
+  PaymentMethods: undefined;
+  Help: undefined;
+  Info: { page: 'about' | 'privacy' | 'terms' };
 };
 
-declare global {
-  namespace ReactNavigation {
-    interface RootParamList extends RootStackParamList {}
-  }
-}
+export type TabParamList = {
+  Home: undefined;
+  Gifts: undefined;
+  Events: undefined;
+  Orders: { tab?: 'gifts' | 'events' } | undefined;
+  Profile: undefined;
+};

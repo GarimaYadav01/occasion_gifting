@@ -1,6 +1,6 @@
 /**
- * Occasion - Celebrate Every Moment
- * Gifting, Event Planning & Booking Platform
+ * Occasion — Gifts · Events · Moments
+ * Customer app (gifting marketplace + event booking).
  *
  * @format
  */
@@ -8,29 +8,27 @@
 import React from 'react';
 import { StatusBar } from 'react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
-import { NavigationContainer } from '@react-navigation/native';
-import { Provider } from 'react-redux';
+import { NavigationContainer, DefaultTheme } from '@react-navigation/native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
+import { Provider } from 'react-redux';
 import { store } from './src/store';
 import { RootNavigator } from './src/navigation/RootNavigator';
-import { LoginModal } from './src/components/auth/LoginModal';
-import { LocationBottomSheet } from './src/components/location/LocationBottomSheet';
-import { colors } from './src/theme';
+import { ToastProvider } from './src/components/Toast';
+import { palettes } from './src/theme';
+
+const navTheme = { ...DefaultTheme, colors: { ...DefaultTheme.colors, background: palettes.gifts.bg } };
 
 function App() {
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
       <Provider store={store}>
         <SafeAreaProvider>
-          <NavigationContainer>
-            <StatusBar
-              barStyle="dark-content"
-              backgroundColor={colors.white}
-            />
-            <RootNavigator />
-            <LoginModal />
-            <LocationBottomSheet />
-          </NavigationContainer>
+          <ToastProvider>
+            <NavigationContainer theme={navTheme}>
+              <StatusBar translucent backgroundColor="transparent" barStyle="light-content" />
+              <RootNavigator />
+            </NavigationContainer>
+          </ToastProvider>
         </SafeAreaProvider>
       </Provider>
     </GestureHandlerRootView>
